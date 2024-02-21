@@ -4,21 +4,21 @@ package com.spring.crujar.service;
 import com.spring.crujar.controller.request.TaskPostRequest;
 import com.spring.crujar.controller.request.TaskPutRequest;
 import com.spring.crujar.domain.Task;
+import com.spring.crujar.mapper.TaskMapper;
 import com.spring.crujar.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
 public class TaskService {
     private final TaskRepository taskRepository;
+    private final TaskMapper taskMapper;
 
     public List<Task> listAll() {
         return taskRepository.findAll();
@@ -30,17 +30,12 @@ public class TaskService {
     }
 
     public Task save(TaskPostRequest taskPostRequest) {
-        return taskRepository.save(Task.builder().description(taskPostRequest.getDescription()).build());
+        return taskRepository.save(taskMapper.toTask(taskPostRequest));
     }
 
     public void replace(TaskPutRequest taskPutRequest) {
-        Task taskSaved = findById(taskPutRequest.getId());
-        Task task = Task.builder()
-                .id(taskSaved.getId())
-                .description(taskPutRequest.getDescription())
-                .build();
-
-        taskRepository.save(task);
+        findById(taskPutRequest.getId());
+        taskRepository.save(taskMapper.toTask(taskPutRequest));
     }
 
     public void delete(UUID id) {

@@ -4,14 +4,12 @@ import com.spring.crujar.controller.request.TaskPostRequest;
 import com.spring.crujar.controller.request.TaskPutRequest;
 import com.spring.crujar.domain.Task;
 import com.spring.crujar.service.TaskService;
-import com.spring.crujar.util.DateUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,12 +18,10 @@ import java.util.UUID;
 @Log4j2
 @RequiredArgsConstructor
 public class TaskController {
-    private final DateUtil dateUtil;
     private final TaskService taskService;
 
     @GetMapping
     public ResponseEntity<List<Task>> list() {
-        log.info(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()));
         return new ResponseEntity<>(taskService.listAll(), HttpStatus.OK);
     }
 
