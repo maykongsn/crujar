@@ -4,12 +4,11 @@ package com.spring.crujar.service;
 import com.spring.crujar.controller.request.TaskPostRequest;
 import com.spring.crujar.controller.request.TaskPutRequest;
 import com.spring.crujar.domain.Task;
+import com.spring.crujar.exception.BadRequestException;
 import com.spring.crujar.mapper.TaskMapper;
 import com.spring.crujar.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -26,7 +25,11 @@ public class TaskService {
 
     public Task findById(UUID id) {
         return taskRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Task not found!"));
+                .orElseThrow(() -> new BadRequestException("Task not found!"));
+    }
+
+    public List<Task> findByTitle(String title) {
+        return taskRepository.findBytitle(title);
     }
 
     public Task save(TaskPostRequest taskPostRequest) {

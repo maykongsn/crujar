@@ -30,6 +30,11 @@ public class TaskController {
         return ResponseEntity.ok(taskService.findById(id));
     }
 
+    @GetMapping(path = "/find")
+    public ResponseEntity<List<Task>> findByTitle(@RequestParam String title) {
+        return ResponseEntity.ok(taskService.findByTitle(title));
+    }
+
     @PostMapping
     public ResponseEntity<Task> save(@RequestBody TaskPostRequest taskPostRequest) {
         return new ResponseEntity<>(taskService.save(taskPostRequest), HttpStatus.CREATED);
