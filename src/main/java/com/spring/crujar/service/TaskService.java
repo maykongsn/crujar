@@ -1,46 +1,49 @@
 package com.spring.crujar.service;
 
 
+import com.spring.crujar.controller.request.TaskPostRequest;
+import com.spring.crujar.controller.request.TaskPutRequest;
 import com.spring.crujar.domain.Task;
+import com.spring.crujar.repository.TaskRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
+@RequiredArgsConstructor
 public class TaskService {
-    private static List<Task> tasks;
-
-    static {
-        tasks = new ArrayList<>(List.of(new Task(1L, "Tarefa"), new Task(2L, "Codificar")));
-    }
+    private final TaskRepository taskRepository;
 
     public List<Task> listAll() {
-        return this.tasks;
+        return taskRepository.findAll();
     }
 
-    public Task findById(Long id) {
-        return tasks.stream()
-                .filter(task -> task.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Task not found"));
+    public Task findById(UUID id) {
+        return taskRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Task not found!"));
     }
 
-    public Task save(Task task) {
-        task.setId(ThreadLocalRandom.current().nextLong(3, 1000000));
-        tasks.add(task);
-        return task;
+    public Task save(TaskPostRequest taskPostRequest) {
+        return taskRepository.save(Task.builder().description(taskPostRequest.getDescription()).build());
     }
 
-    public void replace(Task task) {
-        delete(task.getId());
-        tasks.add(task);
+    public void replace(TaskPutRequest taskPutRequest) {
+        Task taskSaved = findById(taskPutRequest.getId());
+        Task task = Task.builder()
+                .id(taskSaved.getId())
+                .description(taskPutRequest.getDescription())
+                .build();
+
+        taskRepository.save(task);
     }
 
-    public void delete(long id) {
-        tasks.remove(findById(id));
+    public void delete(UUID id) {
+        taskRepository.delete(findById(id));
     }
 }

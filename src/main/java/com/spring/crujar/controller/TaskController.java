@@ -1,5 +1,7 @@
 package com.spring.crujar.controller;
 
+import com.spring.crujar.controller.request.TaskPostRequest;
+import com.spring.crujar.controller.request.TaskPutRequest;
 import com.spring.crujar.domain.Task;
 import com.spring.crujar.service.TaskService;
 import com.spring.crujar.util.DateUtil;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("tasks")
@@ -27,24 +30,23 @@ public class TaskController {
     }
 
     @GetMapping(path = "/{id}")
-    public ResponseEntity<Task> findById(@PathVariable Long id) {
+    public ResponseEntity<Task> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(taskService.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Task> save(@RequestBody Task task) {
-        taskService.save(task);
-        return new ResponseEntity<>(taskService.save(task), HttpStatus.CREATED);
+    public ResponseEntity<Task> save(@RequestBody TaskPostRequest taskPostRequest) {
+        return new ResponseEntity<>(taskService.save(taskPostRequest), HttpStatus.CREATED);
     }
 
     @PutMapping
-    public ResponseEntity<Void> replace(@RequestBody Task task) {
-        taskService.replace(task);
+    public ResponseEntity<Void> replace(@RequestBody TaskPutRequest taskPutRequest) {
+        taskService.replace(taskPutRequest);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping(path = "/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         taskService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
