@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,7 +37,7 @@ public class TaskController {
     }
 
     @PostMapping
-    public ResponseEntity<Task> save(@RequestBody TaskPostRequest taskPostRequest) {
+    public ResponseEntity<Task> save(@RequestBody @Valid TaskPostRequest taskPostRequest) {
         return new ResponseEntity<>(taskService.save(taskPostRequest), HttpStatus.CREATED);
     }
 

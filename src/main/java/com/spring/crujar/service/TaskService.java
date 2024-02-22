@@ -9,6 +9,7 @@ import com.spring.crujar.mapper.TaskMapper;
 import com.spring.crujar.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -32,6 +33,7 @@ public class TaskService {
         return taskRepository.findBytitle(title);
     }
 
+    @Transactional
     public Task save(TaskPostRequest taskPostRequest) {
         return taskRepository.save(taskMapper.toTask(taskPostRequest));
     }
