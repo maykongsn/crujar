@@ -8,6 +8,8 @@ import com.spring.crujar.exception.BadRequestException;
 import com.spring.crujar.mapper.TaskMapper;
 import com.spring.crujar.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,8 +22,8 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final TaskMapper taskMapper;
 
-    public List<Task> listAll() {
-        return taskRepository.findAll();
+    public Page<Task> listAll(Pageable pageable) {
+        return taskRepository.findAll(pageable);
     }
 
     public Task findById(UUID id) {
