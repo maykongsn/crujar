@@ -4,8 +4,7 @@ import com.spring.crujar.controller.response.PaginatedResponse;
 import com.spring.crujar.domain.Task;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -30,5 +29,26 @@ public class SpringClient {
 
         List<Task> tasks = result.getBody().getContent();
         log.info(tasks);
+
+        Task newTask = Task.builder().title("New Task").description("My task").build();
+        Task taskSaved = new RestTemplate().postForObject("http://localhost:8080/tasks", newTask, Task.class);
+        log.info(taskSaved);
+
+        Task anotherTask = Task.builder().title("Another Task").description("My task").build();
+        ResponseEntity<Task> anotherTaskSaved = new RestTemplate().postForEntity("http://localhost:8080/", anotherTask, Task.class);
+        log.info(anotherTaskSaved);
+
+        Task finalTask = Task.builder().title("Final Task").description("My task").build();
+        ResponseEntity<Task> finalTaskSaved = new RestTemplate().exchange("http://localhost:8080/tasks/",
+                HttpMethod.POST,
+                new HttpEntity<>(finalTask, createJsonHeader()),
+                Task.class);
+        log.info(finalTaskSaved);
+    }
+
+    private static HttpHeaders createJsonHeader() {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        return httpHeaders;
     }
 }
