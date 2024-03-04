@@ -7,5 +7,5 @@ import java.util.List;
 import java.util.UUID;
 
 public interface TaskRepository extends JpaRepository<Task, UUID> {
-    List<Task> findBytitle(String title);
+    List<Task> findByTitle(String title);
 }

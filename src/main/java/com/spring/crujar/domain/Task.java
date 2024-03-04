@@ -3,6 +3,7 @@ package com.spring.crujar.domain;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import java.util.UUID;
 
 @Data
@@ -17,6 +18,7 @@ public class Task {
     @Column(length = 16)
     private UUID id;
 
+    @NotEmpty(message = "The title cannot be empty")
     private String title;
 
     private String description;

@@ -20,7 +20,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TaskService {
     private final TaskRepository taskRepository;
-    private final TaskMapper taskMapper;
 
     public Page<Task> listAll(Pageable pageable) {
         return taskRepository.findAll(pageable);
@@ -32,17 +31,17 @@ public class TaskService {
     }
 
     public List<Task> findByTitle(String title) {
-        return taskRepository.findBytitle(title);
+        return taskRepository.findByTitle(title);
     }
 
     @Transactional
     public Task save(TaskPostRequest taskPostRequest) {
-        return taskRepository.save(taskMapper.toTask(taskPostRequest));
+        return taskRepository.save(TaskMapper.INSTANCE.toTask(taskPostRequest));
     }
 
     public void replace(TaskPutRequest taskPutRequest) {
         findById(taskPutRequest.getId());
-        taskRepository.save(taskMapper.toTask(taskPutRequest));
+        taskRepository.save(TaskMapper.INSTANCE.toTask(taskPutRequest));
     }
 
     public void delete(UUID id) {
