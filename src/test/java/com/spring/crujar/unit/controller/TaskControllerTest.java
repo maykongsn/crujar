@@ -1,11 +1,10 @@
-package com.spring.crujar.service;
+package com.spring.crujar.unit.controller;
 
 import com.spring.crujar.controller.TaskController;
 import com.spring.crujar.controller.request.TaskPostRequest;
 import com.spring.crujar.controller.request.TaskPutRequest;
 import com.spring.crujar.domain.Task;
-import com.spring.crujar.exception.BadRequestException;
-import com.spring.crujar.repository.TaskRepository;
+import com.spring.crujar.service.TaskService;
 import com.spring.crujar.util.TaskCreator;
 import com.spring.crujar.util.TaskPostRequestCreator;
 import com.spring.crujar.util.TaskPutRequestCreator;
@@ -20,33 +19,35 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @ExtendWith(SpringExtension.class)
-public class TaskServiceTest {
+public class TaskControllerTest {
     @InjectMocks
-    private TaskService taskService;
+    private TaskController taskController;
 
     @Mock
-    private TaskRepository taskRepositoryMock;
+    private TaskService taskServiceMock;
 
     @BeforeEach
     void setUp() {
         PageImpl<Task> taskPage = new PageImpl<>(List.of(TaskCreator.createValidTask()));
 
-        BDDMockito.when(taskRepositoryMock.findAll(ArgumentMatchers.any(PageRequest.class)))
+        BDDMockito.when(taskServiceMock.listAll(ArgumentMatchers.any()))
                 .thenReturn(taskPage);
 
-        BDDMockito.when(taskRepositoryMock.findByTitle(ArgumentMatchers.anyString()))
+        BDDMockito.when(taskServiceMock.findByTitle(ArgumentMatchers.anyString()))
                 .thenReturn(List.of(TaskCreator.createValidTask()));
 
-        BDDMockito.doNothing().when(taskRepositoryMock).delete(ArgumentMatchers.any(Task.class));
+        BDDMockito.doNothing().when(taskServiceMock).replace(ArgumentMatchers.any(TaskPutRequest.class));
+
+        BDDMockito.doNothing().when(taskServiceMock).delete(ArgumentMatchers.any(UUID.class));
     }
 
     @Test
@@ -54,7 +55,7 @@ public class TaskServiceTest {
     void listAllPageableTasksTest() {
         String expectedTitle = TaskCreator.createValidTask().getTitle();
 
-        Page<Task> taskPage = taskService.listAll(PageRequest.of(1, 1));
+        Page<Task> taskPage = taskController.list(null).getBody();
 
         Assertions.assertThat(taskPage).isNotNull();
         Assertions.assertThat(taskPage.toList())
@@ -71,23 +72,12 @@ public class TaskServiceTest {
         Task task = TaskCreator.createValidTask();
         UUID expectedUUID = task.getId();
 
-        BDDMockito.when(taskRepositoryMock.findById(ArgumentMatchers.any(UUID.class)))
-                .thenReturn(Optional.of(task));
+        BDDMockito.when(taskServiceMock.findById(expectedUUID)).thenReturn(task);
 
-        Task taskSaved = taskService.findById(task.getId());
+        ResponseEntity<Task> responseEntity = taskController.findById(null);
 
-        Assertions.assertThat(taskSaved).isNotNull();
-        Assertions.assertThat(taskSaved.getId()).isNotNull().isEqualTo(expectedUUID);
-    }
-
-    @Test
-    @DisplayName("Should not to be able to find a task when id is not found")
-    void findTaskByIdNotFoundTest() {
-        BDDMockito.when(taskRepositoryMock.findById(ArgumentMatchers.any(UUID.class)))
-                .thenReturn(Optional.empty());
-
-        Assertions.assertThatExceptionOfType(BadRequestException.class)
-                .isThrownBy(() -> this.taskService.findById(UUID.randomUUID()));
+        Assertions.assertThat(responseEntity).isNotNull();
+        Assertions.assertThat(task.getId()).isNotNull().isEqualTo(expectedUUID);
     }
 
     @Test
@@ -95,7 +85,7 @@ public class TaskServiceTest {
     void findTaskByNameTest() {
         String expectedTitle = TaskCreator.createValidTask().getTitle();
 
-        List<Task> tasks = taskService.findByTitle("task");
+        List<Task> tasks = taskController.findByTitle("task").getBody();
 
         Assertions.assertThat(tasks).isNotNull().isNotEmpty().hasSize(1);
         Assertions.assertThat(tasks.get(0).getTitle()).isEqualTo(expectedTitle);
@@ -104,10 +94,10 @@ public class TaskServiceTest {
     @Test
     @DisplayName("Should not be able to list when title is not found")
     void findTaskByTitleNotFound() {
-        BDDMockito.when(taskRepositoryMock.findByTitle(ArgumentMatchers.anyString()))
+        BDDMockito.when(taskServiceMock.findByTitle(ArgumentMatchers.anyString()))
                 .thenReturn(Collections.emptyList());
 
-        List<Task> tasks = taskService.findByTitle("task");
+        List<Task> tasks = taskController.findByTitle("task").getBody();
 
         Assertions.assertThat(tasks).isNotNull().isEmpty();
     }
@@ -117,10 +107,10 @@ public class TaskServiceTest {
     void saveTaskTest() {
         Task task = TaskCreator.createValidTask();
 
-        BDDMockito.when(taskRepositoryMock.save(ArgumentMatchers.any(Task.class)))
+        BDDMockito.when(taskServiceMock.save(ArgumentMatchers.any(TaskPostRequest.class)))
                 .thenReturn(task);
 
-        Task taskSaved = taskService.save(TaskPostRequestCreator.createTaskPostRequest());
+        Task taskSaved = taskController.save(TaskPostRequestCreator.createTaskPostRequest()).getBody();
 
         Assertions.assertThat(task).isNotNull().isEqualTo(taskSaved);
     }
@@ -128,20 +118,15 @@ public class TaskServiceTest {
     @Test
     @DisplayName("Should be able to update a task")
     void updateTaskTest() {
-        BDDMockito.when(taskRepositoryMock.findById(ArgumentMatchers.any(UUID.class)))
-                .thenReturn(Optional.of(TaskCreator.createValidTask()));
+        ResponseEntity<Void> entity = taskController.replace(TaskPutRequestCreator.createTaskPutRequest());
 
-        Assertions.assertThatCode(() -> taskService.replace(TaskPutRequestCreator.createTaskPutRequest()))
-                .doesNotThrowAnyException();
+        Assertions.assertThat(entity).isNotNull();
+        Assertions.assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
 
     @Test
     @DisplayName("Should be able to delete a task")
     void deleteTaskTest() {
-        BDDMockito.when(taskRepositoryMock.findById(ArgumentMatchers.any(UUID.class)))
-                .thenReturn(Optional.of(TaskCreator.createValidTask()));
-
-        Assertions.assertThatCode(() -> taskService.delete(UUID.randomUUID()))
-                .doesNotThrowAnyException();
+        Assertions.assertThatCode(() -> taskController.delete(UUID.randomUUID())).doesNotThrowAnyException();
     }
 }

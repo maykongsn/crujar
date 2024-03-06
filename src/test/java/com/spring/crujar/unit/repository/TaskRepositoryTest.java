@@ -1,6 +1,7 @@
-package com.spring.crujar.repository;
+package com.spring.crujar.unit.repository;
 
 import com.spring.crujar.domain.Task;
+import com.spring.crujar.repository.TaskRepository;
 import com.spring.crujar.util.TaskCreator;
 import lombok.extern.log4j.Log4j2;
 import org.assertj.core.api.Assertions;
