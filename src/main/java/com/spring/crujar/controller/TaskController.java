@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -39,6 +40,7 @@ public class TaskController {
     }
 
     @PostMapping
+//    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Task> save(@RequestBody @Valid TaskPostRequest taskPostRequest) {
         return new ResponseEntity<>(taskService.save(taskPostRequest), HttpStatus.CREATED);
     }
@@ -49,7 +51,7 @@ public class TaskController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @DeleteMapping(path = "/{id}")
+    @DeleteMapping(path = "/admin/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         taskService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
